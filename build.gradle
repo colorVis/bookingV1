@@ -16,6 +16,12 @@ buildscript {
         spring_boot_gradle_plugin_version = '2.0.2.RELEASE'
         slf4j_version = '1.7.25'
         log4j_version = '2.9.1'
+
+        accounts_release_version = '1.0'
+        accounts_release_group = 'com.r3.corda.lib.accounts'
+        confidential_id_release_group = "com.r3.corda.lib.ci"
+        confidential_id_release_version = "1.0"
+
     }
 
     repositories {
@@ -45,8 +51,13 @@ allprojects {
         // Can be removed post-release - used to get nightly snapshot build.
         maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-lib' }
         maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-lib-dev' }
+
         maven { url 'https://jitpack.io' }
         maven { url "https://repo.gradle.org/gradle/libs-releases-local" }
+    }
+    repositories {
+        maven { url 'https://software.r3.com/artifactory/corda-lib-dev' }
+        maven { url 'https://software.r3.com/artifactory/corda-lib' }
     }
 
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
@@ -101,6 +112,14 @@ dependencies {
     // Token SDK dependencies.
     cordapp "$tokens_release_group:tokens-contracts:$tokens_release_version"
     cordapp "$tokens_release_group:tokens-workflows:$tokens_release_version"
+
+    // For the "contracts" module.
+    cordapp "$accounts_release_group:accounts-contracts:$accounts_release_version"
+
+// For the "workflows" module.
+    cordapp "$confidential_id_release_group:ci-workflows:$confidential_id_release_version"
+    cordapp "$accounts_release_group:accounts-workflows:$accounts_release_version"
+
 }
 
 task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
@@ -110,7 +129,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         }
         cordapp("$tokens_release_group:tokens-contracts:$tokens_release_version")
         cordapp("$tokens_release_group:tokens-workflows:$tokens_release_version")
-        cordapp("$tokens_release_group:tokens-money:$tokens_release_version")
+//        cordapp("$tokens_release_group:tokens-money:$tokens_release_version")
         cordapp project(":contracts")
         cordapp project(":workflows")
     }
@@ -125,7 +144,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         cordapps = []
     }
     node {
-        name "O=PartyA,L=London,C=GB"
+        name "O=Venue,L=London,C=GB"
         p2pPort 10005
         rpcSettings {
             address("localhost:10006")
@@ -134,7 +153,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
     node {
-        name "O=PartyB,L=New York,C=US"
+        name "O=Agency,L=London,C=GB"
         p2pPort 10008
         rpcSettings {
             address("localhost:10009")
@@ -142,4 +161,24 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         }
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
+    node {
+        name "O=Buyer,L=London,C=GB"
+        p2pPort 10015
+        rpcSettings {
+            address("localhost:10016")
+            adminAddress("localhost:10053")
+        }
+        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
+    }
+
+    node {
+        name "O=Bank,L=London,C=GB"
+        p2pPort 10017
+        rpcSettings {
+            address("localhost:10018")
+            adminAddress("localhost:10059")
+        }
+        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
+    }
+
 }
