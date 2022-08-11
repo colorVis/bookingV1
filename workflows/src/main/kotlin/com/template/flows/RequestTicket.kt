@@ -40,14 +40,16 @@ class RequestTicket(val seatId:String, val agency:Party, val money: Amount<Curre
     @Suspendable
     override fun call(): Unit {
 
-        val notary = serviceHub.networkMapCache.getNotary(CordaX500Name.parse("O=Notary,L=London,C=GB"))
+
+        // buyer send the money of the ticket according to the listed price
         val priceToken = Amount(money.quantity, FiatCurrency.getInstance(money.token.currencyCode))
         val inputsAndOutputs: Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> =
             DatabaseTokenSelection(serviceHub).generateMove(listOf(Pair(agency, priceToken)), ourIdentity)
 
-
+        // The request is send with money
         val moneySend = RequestState(ourIdentity, agency, seatId)
         val sendSession = initiateFlow(agency)
+
         subFlow(SendStateAndRefFlow(sendSession, inputsAndOutputs.first))
         sendSession.send(inputsAndOutputs.second)
         sendSession.send(moneySend)
@@ -73,7 +75,7 @@ class RequestTicket(val seatId:String, val agency:Party, val money: Amount<Curre
 class RequestTicketResponder(val counterpartySession: FlowSession) : FlowLogic<SignedTransaction>() {
     @Suspendable
     override fun call(): SignedTransaction {
-
+        //recieve money and request
         val holderStockStates = subFlow(ReceiveStateAndRefFlow<FungibleToken>(counterpartySession))
         val moneyReceived: List<FungibleToken> =
             counterpartySession.receive<List<FungibleToken>>().unwrap { it -> it }
@@ -82,17 +84,21 @@ class RequestTicketResponder(val counterpartySession: FlowSession) : FlowLogic<S
 
         val venueStateAndRef = serviceHub.vaultService.queryBy<VenueState>().states.filter{it.state.data.venueId == request.seatId }.single()
         val venueInfo = venueStateAndRef.state.data
+        // judge whether there are available seats
         if(venueInfo.soldOut < venueInfo.maxSeat ) {
             val notary = serviceHub.networkMapCache.getNotary(CordaX500Name.parse("O=Notary,L=London,C=GB"))
 
             val signers = (request.participants).map { it.owningKey }
-            val txCommand = Command(TicketContract.Commands.Create(), signers)
+            val txCommand = Command(RequestContract.Commands.Create(), signers)
 
             val txBuilder = TransactionBuilder(notary)
                 .addOutputState(request, RequestContract.ID)
                 .addCommand(txCommand)
 
+            //transfer money to agency's account
             addMoveTokens(txBuilder, holderStockStates, moneyReceived)
+
+            // sign the request contract and send back the venue holder's name to let it get informed
             val ptx = serviceHub.signInitialTransaction(txBuilder, ourIdentity.owningKey);
 
             val sessions = setOf(counterpartySession);
@@ -107,11 +113,9 @@ class RequestTicketResponder(val counterpartySession: FlowSession) : FlowLogic<S
     }
 }
 
-
+// get the venue holder updated
 @InitiatingFlow
 class ReportManually(val signedTransaction: SignedTransaction, val regulator: Party) : FlowLogic<Unit>() {
-
-
     @Suspendable
     override fun call() {
         val session = initiateFlow(regulator)

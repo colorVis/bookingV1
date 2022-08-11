@@ -45,8 +45,8 @@ class IssueTicket(val requestId: String) : FlowLogic<SignedTransaction>() {
 
     @Suspendable
     override fun call(): SignedTransaction {
-        // Obtain a reference from a notary we wish to use.
 
+        // get updated request
         val inputRequest = QueryCriteria.LinearStateQueryCriteria()
             .withRelevancyStatus(Vault.RelevancyStatus.NOT_RELEVANT)
             .withUuid(listOf(UUID.fromString(requestId)))
@@ -55,11 +55,17 @@ class IssueTicket(val requestId: String) : FlowLogic<SignedTransaction>() {
         val requestStateAndRef = serviceHub.vaultService.queryBy<RequestState>(inputRequest).states.single()
         val requestInfo =  requestStateAndRef.state.data
 
+
+        // get the buyer's info from request
         val buyer= requestInfo.requester
+
+        // get the venue Information by searching the booked venueID
         val venueStateAndRef = serviceHub.vaultService.queryBy<VenueState>().states.filter{it.state.data.venueId == requestInfo.seatId }.single()
 
         val venueInfo = venueStateAndRef.state.data
         val venue = venueInfo.issuer
+
+        // add the venue information and buyer to the ticket state
         val seatState = TicketState(venue,requestInfo.receiver,buyer,venueInfo.imgUrl,venueInfo.getStartTime(),venueInfo.getEndTime(),venueInfo.venueId)
 
         val notary = serviceHub.networkMapCache.getNotary(CordaX500Name.parse("O=Notary,L=London,C=GB"))
@@ -82,7 +88,7 @@ class IssueTicket(val requestId: String) : FlowLogic<SignedTransaction>() {
         * IssuedTokenType is a wrapper around the TokenType and the issuer.
         * */
 
-        val issuedTicketToken = seatState.toPointer(seatState.javaClass) issuedBy  issuer
+        val issuedTicketToken = seatState.toPointer(seatState.javaClass) issuedBy issuer
 
         /* Create an instance of the non-fungible ticket token with the owner as the token holder. The last paramter is a hash of the jar containing the TokenType, use the helper function to fetch it. */
         val ticketToken = NonFungibleToken(issuedTicketToken, buyer, UniqueIdentifier())
@@ -91,13 +97,13 @@ class IssueTicket(val requestId: String) : FlowLogic<SignedTransaction>() {
 
         /* Issue the ticket token by calling the IssueTokens flow provided with the TokenSDK */
          subFlow(IssueTokens(listOf(ticketToken)))
-
+        //updateVenueState
         return subFlow(UpdateVenueState(venueStateAndRef))
 
     }
 }
 
-
+//soldOutSeat+1
 @InitiatingFlow
 class UpdateVenueState(val venueState: StateAndRef<VenueState>) : FlowLogic<SignedTransaction>() {
     @Suspendable

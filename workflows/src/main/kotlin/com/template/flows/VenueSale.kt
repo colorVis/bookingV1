@@ -31,9 +31,7 @@ import org.checkerframework.common.aliasing.qual.Unique
 import java.text.NumberFormat
 import java.util.*
 
-// *********
-// * Flows *
-// *********
+// sell the venue ownership
 @InitiatingFlow
 @StartableByRPC
 class VenueSale(val venueId: String,val description: String, val url: String, val startString: String, val endString:String, val price: Amount<Currency>,val buyer: Party, val maxSeat : Int) : FlowLogic<String>() {

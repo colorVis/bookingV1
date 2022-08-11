@@ -1,12 +1,9 @@
 package com.template.states
 
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
-import com.template.contracts.SeatContract
 import com.template.contracts.VenueContract
 import net.corda.core.contracts.*
-import net.corda.core.flows.FlowLogicRefFactory
 import net.corda.core.identity.Party
-import net.corda.core.serialization.ConstructorForDeserialization
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
