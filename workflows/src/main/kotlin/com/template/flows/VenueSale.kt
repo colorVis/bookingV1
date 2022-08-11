@@ -28,6 +28,7 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.unwrap
 import org.checkerframework.common.aliasing.qual.Unique
+import java.text.NumberFormat
 import java.util.*
 
 // *********
@@ -35,7 +36,7 @@ import java.util.*
 // *********
 @InitiatingFlow
 @StartableByRPC
-class VenueSale(val venueId: String,val startString: String, val endString:String, val price: Amount<Currency>,val buyer: Party, val maxSeat : Int) : FlowLogic<String>() {
+class VenueSale(val venueId: String,val description: String, val url: String, val startString: String, val endString:String, val price: Amount<Currency>,val buyer: Party, val maxSeat : Int) : FlowLogic<String>() {
     override val progressTracker = ProgressTracker()
 
     @Suspendable
@@ -45,7 +46,7 @@ class VenueSale(val venueId: String,val startString: String, val endString:Strin
         val notary = serviceHub.networkMapCache.getNotary(CordaX500Name.parse("O=Notary,L=London,C=GB"))
         /* Construct the output state */
         val uuid = UniqueIdentifier.fromString(UUID.randomUUID().toString())
-        val venueState = VenueState(venueId, issuer, buyer, startString, endString, price,maxSeat,0)
+        val venueState = VenueState(venueId,description,url, issuer, buyer, startString, endString, price,maxSeat,0)
 
         /* Create an instance of TransactionState using the venueState token and the notary */
         val transactionState = venueState withNotary notary!!
@@ -81,8 +82,7 @@ class VenueSale(val venueId: String,val startString: String, val endString:Strin
         /* Initiate a flow session with the buyer to send the venue valuation and transfer of the fiat currency */
         val buyerSession = initiateFlow(buyer)
 
-        // Send the venue valuation to the buyer.
-        buyerSession.send(price)
+        buyerSession.send(price*maxSeat)
 
         // Recieve inputStatesAndRef for the fiat currency exchange from the buyer, these would be inputs to the fiat currency exchange transaction.
         val inputs = subFlow(ReceiveStateAndRefFlow<FungibleToken>(buyerSession))
@@ -118,7 +118,7 @@ class VenueSaleResponder(val counterpartySession: FlowSession) : FlowLogic<Signe
         val price = counterpartySession.receive<Amount<Currency>>().unwrap { it }
 
         /* Create instance of the fiat currecy token amount */
-        val priceToken = Amount(price.quantity, getInstance(price.token.currencyCode))
+        val priceToken = Amount(price.quantity/2, getInstance(price.token.currencyCode))
 
         /*
         *  Generate the move proposal, it returns the input-output pair for the fiat currency transfer, which we need to send to the Initiator.

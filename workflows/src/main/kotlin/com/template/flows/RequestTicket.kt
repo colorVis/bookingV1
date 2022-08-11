@@ -2,7 +2,6 @@ package com.template.flows
 
 
 import co.paralleluniverse.fibers.Suspendable
-import com.google.common.collect.ImmutableSet
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.money.FiatCurrency
 import com.r3.corda.lib.tokens.selection.database.selector.DatabaseTokenSelection
@@ -70,43 +69,43 @@ class RequestTicket(val seatId:String, val agency:Party, val money: Amount<Curre
 }
 
 
-    @InitiatedBy(RequestTicket::class)
-    class RequestTicketResponder(val counterpartySession: FlowSession) : FlowLogic<SignedTransaction>() {
-        @Suspendable
-        override fun call(): SignedTransaction {
+@InitiatedBy(RequestTicket::class)
+class RequestTicketResponder(val counterpartySession: FlowSession) : FlowLogic<SignedTransaction>() {
+    @Suspendable
+    override fun call(): SignedTransaction {
 
-            val holderStockStates = subFlow(ReceiveStateAndRefFlow<FungibleToken>(counterpartySession))
-            val moneyReceived: List<FungibleToken> =
-                counterpartySession.receive<List<FungibleToken>>().unwrap { it -> it }
-            val request = counterpartySession.receive<RequestState>().unwrap { it -> it }
+        val holderStockStates = subFlow(ReceiveStateAndRefFlow<FungibleToken>(counterpartySession))
+        val moneyReceived: List<FungibleToken> =
+            counterpartySession.receive<List<FungibleToken>>().unwrap { it -> it }
+        val request = counterpartySession.receive<RequestState>().unwrap { it -> it }
 
 
-            val venueStateAndRef = serviceHub.vaultService.queryBy<VenueState>().states.filter{it.state.data.venueId == request.seatId }.single()
-            val venueInfo = venueStateAndRef.state.data
-            if(venueInfo.soldOut < venueInfo.maxSeat ) {
-                val notary = serviceHub.networkMapCache.getNotary(CordaX500Name.parse("O=Notary,L=London,C=GB"))
+        val venueStateAndRef = serviceHub.vaultService.queryBy<VenueState>().states.filter{it.state.data.venueId == request.seatId }.single()
+        val venueInfo = venueStateAndRef.state.data
+        if(venueInfo.soldOut < venueInfo.maxSeat ) {
+            val notary = serviceHub.networkMapCache.getNotary(CordaX500Name.parse("O=Notary,L=London,C=GB"))
 
-                val signers = (request.participants).map { it.owningKey }
-                val txCommand = Command(TicketContract.Commands.Create(), signers)
+            val signers = (request.participants).map { it.owningKey }
+            val txCommand = Command(TicketContract.Commands.Create(), signers)
 
-                val txBuilder = TransactionBuilder(notary)
-                    .addOutputState(request, RequestContract.ID)
-                    .addCommand(txCommand)
+            val txBuilder = TransactionBuilder(notary)
+                .addOutputState(request, RequestContract.ID)
+                .addCommand(txCommand)
 
-                addMoveTokens(txBuilder, holderStockStates, moneyReceived)
-                val ptx = serviceHub.signInitialTransaction(txBuilder, ourIdentity.owningKey);
+            addMoveTokens(txBuilder, holderStockStates, moneyReceived)
+            val ptx = serviceHub.signInitialTransaction(txBuilder, ourIdentity.owningKey);
 
-                val sessions = ImmutableSet.of(counterpartySession);
-                counterpartySession.send(venueInfo.issuer)
-                val stx = subFlow(CollectSignaturesFlow(ptx, sessions));
+            val sessions = setOf(counterpartySession);
+            counterpartySession.send(venueInfo.issuer)
+            val stx = subFlow(CollectSignaturesFlow(ptx, sessions));
 
-                return subFlow(FinalityFlow(stx, sessions))
-            }else{
-                throw FlowException("All has been booked")
-            }
-
+            return subFlow(FinalityFlow(stx, sessions))
+        }else{
+            throw FlowException("All has been booked")
         }
+
     }
+}
 
 
 @InitiatingFlow
@@ -130,5 +129,4 @@ class ReportManuallyResponder(val counterpartySession: FlowSession) : FlowLogic<
         serviceHub.recordTransactions(StatesToRecord.ALL_VISIBLE, listOf(signedTransaction))
     }
 }
-
 

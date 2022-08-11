@@ -31,7 +31,7 @@ class IssueCurrency(val currency: String,
         val issuedTokenType = token issuedBy ourIdentity
 
         /* Create an instance of FungibleToken for the fiat currency to be issued */
-        val fungibleToken = FungibleToken(Amount(amount,issuedTokenType),recipient)
+        val fungibleToken = FungibleToken(Amount(amount*100,issuedTokenType),recipient)
 
         val stx = subFlow(IssueTokens(listOf(fungibleToken), listOf<Party>(recipient)))
         return stx.id.toString()

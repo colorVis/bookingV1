@@ -1,0 +1,14 @@
+Venue:
+  host: localhost:10006
+
+Agency:
+  host: localhost:10009
+
+Buyer:
+  host: localhost:10016
+
+Bank:
+  host: localhost:10018
+
+
+server.port: 8085

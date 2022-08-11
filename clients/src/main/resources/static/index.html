@@ -1,10 +1,365 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
-    <title>Example front-end.</title>
+    <title>Booking system Demo Powered By Corda</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+          crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+          integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/"
+          crossorigin="anonymous">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/2.2.0/ui-bootstrap-tpls.min.js"></script>
+    <script src="https://npmcdn.com/angular-toastr/dist/angular-toastr.tpls.js"></script>
+    <link rel="stylesheet" href="https://npmcdn.com/angular-toastr/dist/angular-toastr.css" />
+    <link rel="stylesheet" href="css/bootstrap-datetimepicker.min.css"/>
+    <script src="js/moment.min.js"></script>
+    <script src="js/bootstrap-datetimepicker.min.js" ></script>
+
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/angular-module.js"></script>
 </head>
-<body>
-    <div>Define your front-end here.</div>
+
+<body ng-app="bookingApp" ng-controller="AppController as appCtrl">
+<div class="spinner" ng-show="appCtrl.showSpinner">
+    <div>
+        <image style="width: 100px;" src="img/spinner.svg"></image>
+    </div>
+</div>
+<!-- Common Header -->
+<div class="header" ng-show="!appCtrl.landingScreen">
+    <div style="display: inline-block;">
+        <div class="logo">
+
+        </div>
+    </div>
+</div>
+
+
+<div class="container-fluid">
+
+    <!-- Landing Screen -->
+    <div ng-show="appCtrl.landingScreen">
+        <div class="main-page" style="background-image: url('img/concert.jpg')">
+
+                <div class ="home-btns">
+                    <div class="title">Booking System Demo</div>
+                    <div>
+
+                    </div>
+                    <div class = "btn-group-self">
+                        <div class="chooseId">
+                            <div style="font-family: fantasy; color:yellow; font-size: large">Log in as</div>
+                            <select class="form-select" style ="margin-left: 20px; max-height: 35px;" id="dropdownMenu" ng-model="data.singleSelect">
+                                <option value="bank">Bank</option>
+                                <option value="venue">Venue</option>
+                                <option value="buyer">Buyer</option>
+                                <option value="agency">Agency</option>
+                            </select>
+                        </div>
+
+<!--                        <button class="btn btn-primary" ng-click="appCtrl.setupData()" >Setup Demo Data</button>-->
+<!--                        <button class="btn btn-secondary" ng-click="appCtrl.skipDataSetup('Venue')">Skip</button>-->
+                        <button class="btn btn-primary" ng-click="appCtrl.openDemo()" >Log In</button>
+                    </div>
+                </div>
+            <div class="col-md-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div style="text-align: center; margin-top: 20px">Powered by
+                    <image class="power-by" src="img/corda.png" alt="Corda"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div ng-show="appCtrl.identityPage" style="margin: 15px 30px">
+        <div class="col-md-12">
+            <div class="header">
+                <div class = "navback" >
+                    <button ng-click="appCtrl.backLogin()" style="border-color: transparent;border-radius: 5%;font-weight: 900;"><</button>
+                </div>
+                <div class="personal-info">
+                    <image class ="person-profile" src="img/person.png"></image>
+                    <span style="font-weight: 800">&nbsp; {{appCtrl.activeParty}} &nbsp;&nbsp; <span ng-hide="appCtrl.activeParty == 'Bank'">£ {{appCtrl.balance}}</span></span>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12" ng-show = "appCtrl.buttonScreen">
+            <div class="box-wrapper" style="text-align:center">
+                <button ng-click="appCtrl.issueMoney()" type="button" class="general-button" ng-show = "appCtrl.activeParty == 'Bank'">Issue Money</button>
+                <button ng-click="appCtrl.bookTicket()" type="button" class="general-button" ng-show ="appCtrl.activeParty == 'Buyer'">Book Ticket</button>
+                <button ng-click="appCtrl.switchPage('Seat')" type="button" class="general-button" ng-show ="appCtrl.activeParty == 'Buyer'">Check Seat</button>
+                <button ng-click="appCtrl.switchPage('Venue')" type="button" class="general-button"  ng-show ="appCtrl.activeParty == 'Agency'">Check Booked Venue</button>
+                <button ng-click="appCtrl.switchPage('Request')" type="button" class="general-button"  ng-show ="appCtrl.activeParty == 'Agency'">Check Received Request</button>
+                <button ng-click="appCtrl.switchPage('Venue')" type="button" class="general-button"  ng-show ="appCtrl.activeParty == 'Venue'">Check Booked Venue</button>
+                <button ng-click="appCtrl.issueTicket()" type="button" class="general-button"  ng-show ="appCtrl.activeParty == 'Venue'">Issue Ticket</button>
+                <button ng-click="appCtrl.createVenue()" type="button" class="general-button"  ng-show ="appCtrl.activeParty == 'Venue'">Create Venue</button>
+                <button ng-click="appCtrl.switchPage('Request')" type="button" class="general-button"  ng-show ="appCtrl.activeParty == 'Venue'">Check Received Request</button>
+            </div>
+        </div>
+    </div>
+    <!-- Ticket Screen -->
+    <div ng-show="appCtrl.ticketScreen" class = "col-md-12">
+        <div class="row" style="position: relative;">
+            <div class="spinner" ng-show="appCtrl.showAssetSpinner">
+                <div>
+                    <image style="width: 100px;" src="img/spinner.svg"></image>
+                </div>
+            </div>
+            <div class="col-md-12"><h3>Ticket Information</h3></div>
+            <div class="col-md-12 nodata" style="font-size:20px;" ng-if="!appCtrl.ticketList || appCtrl.ticketList.length == 0">
+                No Ticket Found
+            </div>
+            <div class="col-md-12" ng-repeat="ticket in appCtrl.ticketList">
+                <div class="box-wrapper">
+                    <div style="height: 100%; display: flex; background: lightgray">
+                        <image src="{{ticket.state.data.imgUrl}}"></image>
+                        <div class="venue-info" ng-style="{'filter':{ticket.state.data.isExpired}} ?'brightness(0.5)':'unset';}">
+                            <div class="per-venue"><div style="font-weight: 600"> VenueId: {{ticket.state.data.venueId}}</div></div>
+                            <div class="per-venue"><div style="font-weight: 600"> StartTime: {{ticket.state.data.startTime}}</div></div>
+                            <div class="per-venue"><div style="font-weight: 600"> EndTime:  {{ticket.state.data.endTime}}</div></div>
+                            <div ng-show=" {{ticket.state.data.isExpired}}"><img src="../img/expire.jpg" style="float: right;max-width: 150px;opacity: 0.5;"/></div>
+                            Issued by:
+                            {{ticket.state.data.issuer}}
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div ng-show="appCtrl.venueScreen" class = "col-md-12">
+        <hr class="col-md-12">
+
+        <div class="row" style="position: relative;">
+            <div class="spinner" ng-show="appCtrl.showAssetSpinner">
+                <div>
+                    <image style="width: 100px;" src="img/spinner.svg"></image>
+                </div>
+            </div>
+            <div class="col-md-12"><h3>Venue Information</h3></div>
+            <div class="col-md-12 nodata" style="font-size:20px;" ng-if="!appCtrl.venueList || appCtrl.veuneList.length == 0">
+                No Assets Found
+            </div>
+            <div class="col-md-12" ng-repeat="venue in appCtrl.venueList">
+                <div class="box-wrapper">
+                    <div style="height: 100%; display: flex; background: lightgray;">
+<!--                        <image ng-click= "appCtrl.openAssetModal(asset.state.data.linearId)" class="asset-img" src="{{asset.state.data.imageUrl}}">-->
+<!--                            -->
+<!--                        </image>-->
+                        <image src="{{venue.state.data.imgUrl}}"></image>
+                        <div class="venue-info">
+                            <div class="per-venue"><div style="font-weight: 600"> VenueId: <span>{{venue.state.data.venueId}}</span></div></div>
+                            <div class="per-venue"><div style="font-weight: 600"> StartTime: <span>{{venue.state.data.startString}}</span></div></div>
+                            <div class="per-venue"><div style="font-weight: 600"> EndTime: <span>{{venue.state.data.endString}}</span></div></div>
+                            <div class="per-venue"><div style="font-weight: 600"> Description: <span>{{venue.state.data.description}}</span></div></div>
+                            <div class="per-venue"><div style="font-weight: 600"> Price: <span>{{venue.state.data.price}}</span></div></div>
+                            <div class="per-venue"><div style="font-weight: 600"> MaxSeat: <span>{{venue.state.data.maxSeat}}</span></div></div>
+                            Issued to: {{venue.state.data.owner}}
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <div ng-show="appCtrl.requestScreen" class = "col-md-12">
+        <hr class="col-md-12">
+        <div class="row" style="position: relative;" >
+            <div class="spinner" ng-show="appCtrl.showAssetSpinner">
+                <div>
+                    <image style="width: 100px;" src="img/spinner.svg"></image>
+                </div>
+            </div>
+            <div class="col-md-12"><h3>Request</h3></div>
+            <div class="col-md-12 nodata" style="font-size:20px;" ng-if="!appCtrl.requestList || appCtrl.requestList.length == 0">
+                No Request Found
+            </div>
+            <div class="col-md-12" ng-repeat="request in appCtrl.requestList">
+                <div class="request-wrapper">
+                    <div style="height: 100%; display: flex; background: lightgray; width:100%;">
+                      <div style="width: 80%">
+                          <span style="font-weight: 600; padding-left: 5%">Requester Name: &nbsp;{{request.state.data.requester}}</span><br>
+                          <span style="font-weight: 600; padding-left: 5%">Venue ID: &nbsp;{{request.state.data.seatId}}</span><br>
+                          <span style="font-weight: 600; padding-left: 5%">Request ID : &nbsp;{{request.state.data.linearId.id}}</span>
+                      </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+</div>
+
+<!-- Create Asset Modal -->
+<script type="text/ng-template" id="addNewVenue.html">
+    <div class="modal-header">
+        <h3 class="modal-title">Add New Venue</h3>
+    </div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-md-4">
+                <image ng-if="newVenueCtrl.form.imgUrl" src="{{newVenueCtrl.form.imgUrl}}" alt="Venue Image" width="100%"></image>
+            </div>
+            <div class="col-md-8">
+                <div class='input-group'>
+                    <span>Venue ID: </span>
+                    <input type='text' class="form-control" placeholder="Enter venue Id"
+                           ng-model="newVenueCtrl.form.venueId"/>
+                    </span>
+                </div>
+                <div class='input-group'>
+                    <span>Image URL: </span>
+                    <input type='text' class="form-control" placeholder="Enter image URL"
+                           ng-model="newVenueCtrl.form.imgUrl"/>
+                    </span>
+                </div>
+                <div class='input-group'>
+                    <span>Start Time: </span>
+                    <input type='text' class="form-control" placeholder="Enter start time"
+                           ng-model="newVenueCtrl.form.startTime"/>
+                </div>
+                <div class='input-group'>
+                    <span>End Time: </span>
+                    <input type='text' class="form-control" placeholder="Enter end time"
+                           ng-model="newVenueCtrl.form.endTime"/>
+                </div>
+                <div class='input-group'>
+                    <span>Price: </span>
+                    <input type='text' class="form-control" placeholder="Enter price"
+                           ng-model="newVenueCtrl.form.price"/>
+                </div>
+                <div class='input-group'>
+                    <span>Agency: </span>
+                    <input type='text' class="form-control" placeholder="Enter agency name"
+                           ng-model="newVenueCtrl.form.buyer"/>
+                </div>
+                <div class='input-group'>
+                    <span>Max Seat: </span>
+                    <input type='text' class="form-control" placeholder="Enter max seat"
+                           ng-model="newVenueCtrl.form.maxSeat"/>
+                </div>
+                <div class='input-group'>
+                    <span>Description: </span>
+                    <textarea class="form-control" rows="5" ng-model="newVenueCtrl.form.description" placeholder="Asset Description"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button ng-click="newVenueCtrl.cancel()" type="button" class="btn btn-default">Close</button>
+        <button ng-click="newVenueCtrl.create()" type="button" class="btn btn-primary">Add</button>
+    </div>
+</script>
+
+
+
+<!-- Issue Cash Modal -->
+<script type="text/ng-template" id="issueMoneyModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">Issue Money</h3>
+    </div>
+    <div class="modal-body">
+        <div class='input-group'>
+            <input type='text' class="form-control" placeholder="Amount"
+                   ng-model="moneyModalCtrl.form.amount"/>
+            <span class="input-group-addon">
+                    <i class="fas fa-pound-sign"></i>
+                </span>
+        </div>
+        <div class="form-group">
+            <label for="partySelector">Issue to</label>
+            <select class="form-control" id="partySelector" ng-model="moneyModalCtrl.form.party" style="width: 300px;">
+                <option value="Venue">Venue</option>
+                <option value="Agency">Agency</option>
+                <option value="Buyer">Buyer</option>
+            </select>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button ng-click="moneyModalCtrl.cancel()" type="button" class="btn btn-default">Close</button>
+        <button ng-click="moneyModalCtrl.issueMoney()" type="button" class="btn btn-primary">Issue</button>
+    </div>
+</script>
+
+<script type="text/ng-template" id="ticketModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">Book Ticket</h3>
+    </div>
+    <div class="modal-body">
+        <div class='input-group'>
+            <input type='text' class="form-control" placeholder="Enter venue id"
+                   ng-model="ticketModalCtrl.bookForm.venueId"/>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button ng-click="ticketModalCtrl.cancel()" type="button" class="btn btn-default">Close</button>
+        <button ng-click="ticketModalCtrl.book()" type="button" class="btn btn-primary">Confirm</button>
+    </div>
+</script>
+
+<script type="text/ng-template" id="requestModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">Issue Ticket</h3>
+    </div>
+    <div class="modal-body">
+        <div class='input-group'>
+            <input type='text' class="form-control" placeholder="Enter request id"
+                   ng-model="requestModalCtrl.form.requestId"/>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button ng-click="requestModalCtrl.cancel()" type="button" class="btn btn-default">Close</button>
+        <button ng-click="requestModalCtrl.issue()" type="button" class="btn btn-primary">Issue</button>
+    </div>
+</script>
+
+
+
+
+
+<script type="text/ng-template" id="venueModel.html">
+    <div class="row" style="position: relative;">
+        <div class="spinner" ng-show="appCtrl.showAssetSpinner">
+            <div>
+                <image style="width: 100px;" src="img/spinner.svg"></image>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="personal-info">
+                <image class ="person-profile" src="img/person.png" style="max-width:50px; max-height: 50px;"></image>
+                <span style="font-weight: 800">&nbsp; Venue</span>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="box-wrapper" style="text-align:center">
+                <button ng-click="agencyCtrl.showVenueList()" type="button" class="general-button">Check Booked Venue</button>
+                <button ng-click="agencyCtrl.showRequestList()" type="button" class="general-button">Check Received Request</button>
+            </div>
+        </div>
+    </div>
+</script>
+
+
 </body>
 </html>

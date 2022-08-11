@@ -1,6 +1,5 @@
 package com.template.flows
 
-import com.r3.corda.lib.accounts.workflows.services.KeyManagementBackedAccountService.Companion.logger
 import com.template.states.RequestState
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.identity.CordaX500Name
@@ -24,14 +23,8 @@ class AutoTicketRequest(private val serviceHub: AppServiceHub) : SingletonSerial
     }
 
     init {
-        if (load == "false") {
-            logger.warn("Not loading service")
-        } else {
             directPayment()
             log.info("Tracking new Payment Request")
-            logger.info("Loading service")
-        }
-
     }
 
     private fun directPayment() {

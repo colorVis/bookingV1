@@ -3,10 +3,7 @@ package com.template.states
 
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
 import com.template.contracts.RequestContract
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.BelongsToContract
-import net.corda.core.contracts.LinearState
-import net.corda.core.contracts.UniqueIdentifier
+import net.corda.core.contracts.*
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.serialization.ConstructorForDeserialization
@@ -21,7 +18,7 @@ class RequestState(
     val seatId: String,
     override val linearId: UniqueIdentifier = UniqueIdentifier()
 
-) : LinearState {
+) : ContractState,LinearState {
     override val participants: List<AbstractParty> get() = listOf(requester,receiver)
 
 }

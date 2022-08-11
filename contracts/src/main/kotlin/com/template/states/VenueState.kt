@@ -15,6 +15,8 @@ import java.util.*
 @BelongsToContract(VenueContract::class)
 class VenueState (
     val venueId: String,
+    val description: String,
+    val imgUrl: String,
     val issuer: Party,
     var owner: Party,
     val startString : String,
@@ -25,14 +27,14 @@ class VenueState (
     override val linearId: UniqueIdentifier = UniqueIdentifier(),
     override val fractionDigits: Int = 0,
     override val participants : List<Party> = listOf(issuer,owner)
-) : EvolvableTokenType(){
+) : ContractState,EvolvableTokenType(){
     override val maintainers: List<Party> get() = listOf(issuer)
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     val start  = LocalDateTime.parse(startString, formatter)
     val end = LocalDateTime.parse(endString,formatter)
     fun getStartTime(): LocalDateTime{return start}
     fun getEndTime(): LocalDateTime{return end}
-    fun book(): VenueState{return VenueState(venueId, issuer,owner, startString,endString, price, maxSeat, soldOut+1,linearId) }
+    fun book(): VenueState{return VenueState(venueId, description,imgUrl,issuer,owner, startString,endString, price, maxSeat, soldOut+1,linearId) }
 
 
 }

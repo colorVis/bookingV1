@@ -2,7 +2,6 @@ package com.template.flows
 
 
 import co.paralleluniverse.fibers.Suspendable
-import com.google.common.collect.ImmutableSet
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
@@ -61,7 +60,7 @@ class IssueTicket(val requestId: String) : FlowLogic<SignedTransaction>() {
 
         val venueInfo = venueStateAndRef.state.data
         val venue = venueInfo.issuer
-        val seatState = TicketState(venue,requestInfo.receiver,buyer,venueInfo.getStartTime(),venueInfo.getEndTime(),venueInfo.venueId)
+        val seatState = TicketState(venue,requestInfo.receiver,buyer,venueInfo.imgUrl,venueInfo.getStartTime(),venueInfo.getEndTime(),venueInfo.venueId)
 
         val notary = serviceHub.networkMapCache.getNotary(CordaX500Name.parse("O=Notary,L=London,C=GB"))
 
