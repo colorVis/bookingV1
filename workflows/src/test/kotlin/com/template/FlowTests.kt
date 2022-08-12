@@ -2,7 +2,7 @@ package com.template
 
 import com.template.flows.IssueCurrency
 import com.template.states.TicketState
-import groovy.util.GroovyTestCase.assertEquals
+import junit.framework.Assert.assertEquals
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.FungibleState
 import net.corda.core.identity.CordaX500Name

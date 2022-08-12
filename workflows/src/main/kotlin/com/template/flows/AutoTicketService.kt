@@ -23,24 +23,24 @@ class AutoTicketRequest(private val serviceHub: AppServiceHub) : SingletonSerial
     }
 
     init {
-            directPayment()
-            log.info("Tracking new Payment Request")
+        directPayment()
+        log.info("Tracking new Payment Request")
     }
 
     private fun directPayment() {
         val ourIdentity = ourIdentity()
 
-            if (ourIdentity == serviceHub.networkMapCache.getPeerByLegalName(CordaX500Name("Venue", "London", "GB"))!!) {
-                serviceHub.vaultService.trackBy<RequestState>().updates.subscribe {
-                        update: Vault.Update<RequestState> -> update.produced.forEach{
-                        message: StateAndRef<RequestState> ->
-                    val state = message.state as RequestState
+        if (ourIdentity == serviceHub.networkMapCache.getPeerByLegalName(CordaX500Name("Venue", "London", "GB"))!!) {
+            serviceHub.vaultService.trackBy<RequestState>().updates.subscribe {
+                    update: Vault.Update<RequestState> -> update.produced.forEach{
+                    message: StateAndRef<RequestState> ->
+                val state = message.state as RequestState
                 executor.execute {
                     log.info("Directing to message $state")
                     serviceHub.startFlow(IssueTicket(state.linearId.toString()))
                 }
             }
-        }
+            }
         }
     }
     private fun ourIdentity(): Party = serviceHub.myInfo.legalIdentities.first()
