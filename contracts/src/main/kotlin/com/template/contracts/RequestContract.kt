@@ -25,8 +25,8 @@ class RequestContract : Contract {
         val commandData = tx.commands[0].value
         when(commandData){
             is Commands.Create -> requireThat {
-                val outputs = tx.outputsOfType(RequestState::class.java)[0]
-                "The request must have one output".using(tx.outputs.size ==1)
+                val outputs = tx.outputsOfType(RequestState::class.java)
+                "The request must have one output".using(outputs.size ==1)
             }
         }
     }

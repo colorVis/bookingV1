@@ -24,8 +24,8 @@ class TicketContract : Contract {
         val commandData = tx.commands[0].value
         when(commandData){
             is Commands.Create -> requireThat {
-                val output = tx.outputsOfType(TicketState::class.java)[0]
-                "The ticket must have one output".using(tx.outputs.size ==1)
+                val output = tx.outputsOfType(TicketState::class.java)
+                "The ticket must have one output".using(output.size ==1)
 
             }
             is Commands.Transfer -> requireThat {
