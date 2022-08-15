@@ -64,7 +64,7 @@ class RequestTicket(val seatId:String, val agency:Party, val money: Amount<Curre
 
         val txId = subFlow(signFlow).id
         val getFlow = subFlow(ReceiveFinalityFlow(sendSession, txId))
-        subFlow(ReportManually(getFlow, issuer))
+//        subFlow(ReportManually(getFlow, issuer))
     }
 
 
@@ -105,6 +105,7 @@ class RequestTicketResponder(val counterpartySession: FlowSession) : FlowLogic<S
             counterpartySession.send(venueInfo.issuer)
             val stx = subFlow(CollectSignaturesFlow(ptx, sessions));
 
+            subFlow(ReportManually(stx, venueInfo.issuer))
             return subFlow(FinalityFlow(stx, sessions))
         }else{
             throw FlowException("All has been booked")
